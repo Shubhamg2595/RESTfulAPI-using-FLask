@@ -1,5 +1,5 @@
 from flask import Flask,request
-from flask_restful import Resource,Api
+from flask_restful import Resource,Api,reqparse
 from flask_jwt import JWT,jwt_required
 from security import authenticate,identity
 
@@ -34,20 +34,12 @@ class Item(Resource):
         global items
         items=list(filter(lambda x:x['name'] == name ,items))
         return {'message':'items deleted'}
-
-# '''
-#     reason i used global keyword with items is to ensure python interpreter
-#     that the items local variables used at left side is actually the outer vaiable defined above
-#
-#
-#     if we dont use global keyword, the python interpreter will think,
-#     items is a local variable
-#
-#      so what is actually happening is we are replacing the existing items list with a new list
-#      that does not contain the name of the item being deleted'''
-
+#USING reqparse to make sure ,we can parse the input data in put() method properly.
+    #reqparse also helps in making sure that only variable json can be passed and not any other value
     def put(self,name):
-        data=request.get_json()
+        parser=reqparse.RequestParser()
+        parser.add_argument('price',type=float,required=True,help="this field cannot be left blank")
+        data=parser.parse_args()
         #first we check if item exist or not
         item=next(filter(lambda x:x['name']==name,items),None)
         if item is None:
