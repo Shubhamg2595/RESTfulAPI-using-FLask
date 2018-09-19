@@ -11,22 +11,11 @@ api=Api(app)
 
 jwt=JWT(app,authenticate,identity)
 
-'''
-here JWT creates a new endpoint that is /auth
-when we calll/auth, we send it a username and a password and /auth endpoint send this data
-to authenticate() method.
-
-now after  successful authentication, JWT returns an access JW TOKEN
-now this token is sent to identity function ,where identity uses received token as paylaod to
-fetch the correct user based on given id.
-
-'''
-
 
 items=[]
 
 class Item(Resource):
-    @jwt_required
+    # @jwt_required
     def get(self,name):
         item=next(filter(lambda x:x['name']==name,items),None)
         return {'item':item},200 if item is not None else 404
@@ -38,6 +27,36 @@ class Item(Resource):
         item={'name':name,'price':data['price']}
         items.append(item)
         return item,201
+
+
+#CREATING A METHOD TO DELETE ITEMS
+    def delete(self,name):
+        global items
+        items=list(filter(lambda x:x['name'] == name ,items))
+        return {'message':'items deleted'}
+
+# '''
+#     reason i used global keyword with items is to ensure python interpreter
+#     that the items local variables used at left side is actually the outer vaiable defined above
+#
+#
+#     if we dont use global keyword, the python interpreter will think,
+#     items is a local variable
+#
+#      so what is actually happening is we are replacing the existing items list with a new list
+#      that does not contain the name of the item being deleted'''
+
+    def put(self,name):
+        data=request.get_json()
+        #first we check if item exist or not
+        item=next(filter(lambda x:x['name']==name,items),None)
+        if item is None:
+            item={'name':name,'price':data['price']}
+            items.append(item)
+        else:
+            item.update(data) #item is actually a dictionary that has an updated method...
+
+        return {'message':'itemlist updated'}
 
 class ItemList(Resource):
     def get(self):
