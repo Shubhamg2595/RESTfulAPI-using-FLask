@@ -1,25 +1,32 @@
 from flask import Flask,request
 from flask_restful import Resource,Api
+from flask_jwt import JWT,jwt_required
+from security import authenticate,identity
 
 
-# working nwith authentication
-'install flaskj jwt'
-'''
-jst: stands for json web token
-it helps in encoding some data
-for example to send private messages,we can encode such messages,so that the reciever with corredt decryption key
-can access it
-
-'''
 app=Flask(__name__)
 'create a secret key for your app'
 app.secret_key='shubham:)'
 api=Api(app)
 
+jwt=JWT(app,authenticate,identity)
+
+'''
+here JWT creates a new endpoint that is /auth
+when we calll/auth, we send it a username and a password and /auth endpoint send this data
+to authenticate() method.
+
+now after  successful authentication, JWT returns an access JW TOKEN
+now this token is sent to identity function ,where identity uses received token as paylaod to
+fetch the correct user based on given id.
+
+'''
+
 
 items=[]
 
 class Item(Resource):
+    @jwt_required
     def get(self,name):
         item=next(filter(lambda x:x['name']==name,items),None)
         return {'item':item},200 if item is not None else 404
